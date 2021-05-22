@@ -52,7 +52,7 @@ def fuzzing(ports):
     elif 80 in ports:
         with open('wordlists/common.txt','r') as words:
             for word in words.readlines():
-                url = "http://{}/{}".format(domain,x)
+                url = "http://{}/{}".format(domain,word)
                 req = requests.get(url)
                 print("[+] Status: {} Wordlist: {} ".format(req.status_code,word.rstrip("\n")))
 
