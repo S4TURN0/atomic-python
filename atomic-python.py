@@ -4,18 +4,19 @@ import argparse
 import requests
 
 parse = argparse.ArgumentParser(description="Esse código serve para realizar um portscan")
-parse.add_argument('-d','--dest',required=True,type=str,dest="destino",help="Insira o endereço de destino")
+parse.add_argument('-a','--auto',action="store_true",dest="automation",help="Realizar discoberta de subdominios")
+parse.add_argument('-d','--dest',type=str,dest="destino",help="Insira o endereço de destino")
 parse.add_argument('-p',help="Insira a porta para ser escaneada")
 parse.add_argument('-s','--subs',action="store_true",dest="subdomain",help="Realizar discoberta de subdominios")
 parse.add_argument('-ps','--scan',action="store_true",dest="portscan",help="Realizar escaneamento de portas")
-parse.add_argument('-f','--fuzz',action="store_true",dest="fuzzing",help="Realizar um fuzzing ao encontrar portas web abertas")
+parse.add_argument('-f','--fuzz',dest="fuzzing",help="Realizar um fuzzing ao encontrar portas web abertas")
 parse.add_argument('-hc',help="Para especificar os códigos que deseja esconder")
-parse.add_argument('-sc',help="Para especificar os códigos que deseja mostrar")
+parse.add_argument('-sc',help="Para especificar os códigos que deseja mostrar") 
 parse.add_argument('-w',type=str,help="Adicionar uma wordlist para a realização do fuzzing (OPCIONAL)")
 args = parse.parse_args()
 
 # Função para realizar a descoberta de subdominios
-def subdomain(domain):
+def subdomain():
     print("\n[+] Iniciando a descoberta de subdominios\n")
 
     url = 'https://dns.bufferover.run/dns?q='+domain
@@ -30,15 +31,49 @@ def subdomain(domain):
     # Remover subdominios duplicados
     uniq_subs = list(dict.fromkeys(subs))
 
-    for x in uniq_subs: print(x)
+    for x in uniq_subs: 
+        print(x)
 
     print("\n[+] ",len(uniq_subs)," Sub-dominios encontrados!")
+    return uniq_subs
+
+# Função inicial para gerenciar as portas e iniciar o escaneamento
+def port_scan(ip,ports):
+    if ports == None:              
+        # Montando a lista de portas padrões
+        ports = []
+        for x in [80,443]: 
+            ports.append(x)
+
+        # Iniciando o escaneamento com as portas definidas
+        return connect_ports(ip,ports)
+
+    elif '-' in ports:
+        # Montando a lista de portas padrões
+        start_port, end_port = ports.split("-")
+        start_port, end_port = int(start_port), int(end_port)
+        ports = [ p for p in range(start_port, end_port+1)]
+
+        # Iniciando o escaneamento com as portas definidas                
+        return connect_ports(ip,ports)
+
+    elif ',' in ports:
+        # Montando a lista de portas padrões    
+        x = ports.split(",")
+        ports = [ int(p) for p in x]
+
+        # Iniciando o escaneamento com as portas definidas
+        return connect_ports(ip,ports)
+            
+    else: 
+        ports = [int(ports)]
+        return connect_ports(ip,ports)    
 
 # Função para realizar o portscan
-def port_scan(ports):
-    print("\n[+] Inciando o portscan no destino: ",ip,"\n")
+def connect_ports(ip,ports):
+    print("[+] Inciando o portscan no destino: ",ip,"\n")
 
-    fuzz = []    
+    port_found = []
 
     for port in ports:
 
@@ -47,41 +82,39 @@ def port_scan(ports):
         connect = sock.connect_ex((ip,port))
 
         if connect == 0:
+            port_found.append(port)
             try:
-                service = socket.getservbyport(port)
+                service = socket.getservbyport(port, 'tcp')
                 print("[+] Conexão aberta:", port,service)
             except Exception as e:
                 print("[+] Conexão aberta:", port,"unknown")
-            
-            if port in [80,443,8080,8443]:
-                fuzz.append(port)
-        sock.close()
-    print("\n[+] O portscan foi realizado com sucesso!!\n")
+        
+            sock.close()
 
-    if args.fuzzing == True and fuzz != None:
-        fuzzing(fuzz)
+    print("\n[+] O portscan foi realizado com sucesso!!\n")
+    return port_found
 
 # Função para realizar o web fuzzing
-def fuzzing(ports):
+def fuzzing(url):
     print('\n[+] Iniciando o Web Fuzzing\n')
 
-    if args.w != None:
-        wordlist(args.w)
-        
-    else:
-        wordlist('wordlists/common.txt')
+    wordlist(url,args.w) if args.w != None else wordlist(url,'wordlists/common.txt')
 
 # Função para gerenciamento de wordlists
-def wordlist(arquivo):
-    with open(arquivo,'r') as words: 
-        for word in words.readlines():
-            if 443 in ports:
-                url = "https://{}/{}".format(domain,word)
+def wordlist(url,arquivo):
+    with open(arquivo,'r') as words:   
+    
+        if args.automation != False:
+            try:
+                url = "https://{}/".format(domain)
+                req = requests.get(url)
+            except:
+                url = "http://{}/".format(domain)
+                req = requests.get(url)     
 
-            elif 80 in ports:
-                url = "http://{}/{}".format(domain,word)
-
-            req = requests.get(url)
+        for word in words.readlines():    
+                
+            req = requests.get(url+word)
 
             if args.sc != None:
                 if ',' in args.sc:
@@ -104,40 +137,36 @@ def wordlist(arquivo):
                 else:
                     if req.status_code != int(args.hc):    
                         print("[+] Status: {} Wordlist: {}  ".format(req.status_code,word.rstrip("\n")))
-            else:
-                print("[+] Status: {} Wordlist: {}  ".format(req.status_code,word.rstrip("\n")))
+           
+            else: print("[+] Status: {} Wordlist: {}  ".format(req.status_code,word.rstrip("\n")))
 
-try:
-    domain = args.destino
-    ip = socket.gethostbyname(domain)
-    ports = args.p
+# Função para execução automatica os scripts 
+def auto():
+    domains = subdomain()
+    for domain in domains:
+        port = port_scan(domain,ports)
+        print(port)
+        if (80 or 443) in port:
+            fuzzing(domain)
 
-    if args.subdomain == True:
-        subdomain(domain)
-
-    if args.portscan == True:
-        if ports == None:        
-            ports = []
-            for x in range(0,1024):
-                ports.append(x)
-            port_scan(ports)
-
-        elif '-' in ports:
-            start_port, end_port = ports.split("-")
-            start_port, end_port = int(start_port), int(end_port)
-            ports = [ p for p in range(start_port, end_port+1)]
-            port_scan(ports)
-
-        elif ',' in ports:
-            x = ports.split(",")
-            ports = [ int(p) for p in x]
-            port_scan(ports)
+if __name__ == "__main__":
+    try:
+        if args.destino != None:
+            domain = args.destino
+            ip = socket.gethostbyname(domain)
+            ports = args.p
         
-        else:
-            ports = [int(ports)]
-            port_scan(ports)
+        if args.automation: auto()
 
-except socket.gaierror:
-    print("\n[-] Não foi possivel se conectar ao servidor")
-except KeyboardInterrupt:
-    print("\n[-] Portscan cancelado!")
+        if args.subdomain: subdomain()
+
+        if args.portscan == True or args.p != None: port_scan(ip,ports)
+
+        if args.fuzzing: 
+            url = args.fuzzing
+            fuzzing(url)
+
+    except socket.gaierror:
+        print("\n[-] Não foi possivel se conectar ao servidor")
+    except KeyboardInterrupt:
+        print("\n[-] Portscan cancelado!")
