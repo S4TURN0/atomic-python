@@ -41,9 +41,9 @@ def fuzzing(*args):
                     status = [ int(p) for p in x]
                    
                     if not req.status_code in status:    
-                        print("[+] Status: {} Wordlist: /{}  ".format(req.status_code,word.rstrip("\n")))
+                        print("[+] Status: {} Wordlist: {}  ".format(req.status_code,word.rstrip("\n")))
                 else:
                     if req.status_code != int(hc):    
-                        print("[+] Status: {} Wordlist: /{}  ".format(req.status_code,word.rstrip("\n")))
+                        print("[+] Status: {} Wordlist: {}  ".format(req.status_code,word.rstrip("\n")))
            
             else: print("[+] Status: {} Wordlist: {}  ".format(req.status_code,word.rstrip("\n")))
