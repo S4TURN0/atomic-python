@@ -1,8 +1,7 @@
 #!/usr/bin/python3
 import argparse
 from scripts.subdomains import subdomain
-from scripts.port_scan import port_scan
-from scripts.port_scan import get_ip_domain
+from scripts.port_scan import port_scan, get_ip_domain
 from scripts.fuzzing import fuzzing
 from scripts.automation import auto
 from utils.banner import banners
@@ -14,8 +13,8 @@ parse.add_argument('-p',help="Insira a porta para ser escaneada")
 parse.add_argument('-s','--subs',action="store_true",dest="subdomain",help="Realizar discoberta de subdominios")
 parse.add_argument('-ps','--scan',action="store_true",dest="portscan",help="Realizar escaneamento de portas")
 parse.add_argument('-f','--fuzz',dest="fuzzing",help="Realizar um fuzzing ao encontrar portas web abertas")
-parse.add_argument('-hc',help="Para especificar os códigos que deseja esconder")
-parse.add_argument('-sc',help="Para especificar os códigos que deseja mostrar") 
+parse.add_argument('-hc',help="Para especificar os códigos HTTP que deseja esconder")
+parse.add_argument('-sc',help="Para especificar os códigos HTTP que deseja mostrar") 
 parse.add_argument('-w',type=str,help="Adicionar uma wordlist para a realização do fuzzing (OPCIONAL)")
 args = parse.parse_args()
 
@@ -38,8 +37,7 @@ def main():
         if args.portscan == True or args.p != None: port_scan(ip,ports)
 
         if args.fuzzing:
-            url = args.fuzzing
-            fuzzing(domain,args.sc,args.hc,args.automation,url,args.w)
+            fuzzing(domain,args.sc,args.hc,args.automation,args.fuzzing,args.w)
 
     except KeyboardInterrupt:
         print("\n[!] Execução cancelada!")
