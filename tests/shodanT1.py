@@ -1,10 +1,10 @@
 import shodan
 
-SPI = 'Nq0mOunMlDkNjgGBUr6ir0QPdwIAiWjN'
+SPI = '<api>'
 
 api = shodan.Shodan(SPI)
 
-host = api.host('172.67.182.214')
+host = api.host('<ip>')
 
 print('IP: {}'.format(host['ip_str']))
 
