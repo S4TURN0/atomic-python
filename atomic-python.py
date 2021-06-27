@@ -36,8 +36,7 @@ def main():
 
         if args.portscan == True or args.p != None: port_scan(ip,ports)
 
-        if args.fuzzing:
-            fuzzing(domain,args.sc,args.hc,args.automation,args.fuzzing,args.w)
+        if args.fuzzing: fuzzing(domain,args.sc,args.hc,args.automation,args.fuzzing,args.w)
 
     except KeyboardInterrupt:
         print("\n[!] Execução cancelada!")
