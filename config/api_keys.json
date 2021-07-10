@@ -1,0 +1,9 @@
+{
+    "certspotter":["API_KEY","API_KEY"],
+    "sectrails":["API_KEY","API_KEY"],
+    "shodan":["API_KEY","API_KEY"],
+    "passivetotal":[["USER", "API_KEY"],["USER","API_KEY"]],
+    "dnsdb":["API_KEY","API_KEY"],
+    "virustotal":["API_KEY","API_KEY"],
+    "alienvault":["API_KEY","API_KEY"]
+}
