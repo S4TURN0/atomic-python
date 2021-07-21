@@ -40,7 +40,9 @@ def main():
 
     except KeyboardInterrupt:
         print("\n[!] Execução cancelada!")
-    finally:
+    except Exception as e:
+        print('\n[!] Error: {}'.format(e))
+    else:
         print('\n[+] Execução finalizada com sucesso!')
 
 if __name__ == "__main__":
