@@ -16,6 +16,7 @@ def subdomain(args):
     alienvault()
     anubis()    
     bufferover()
+    chaos()
     crt()
     certspotter()
     dnsdb()
@@ -26,53 +27,53 @@ def subdomain(args):
     threatcrowd()
     virustotal()
     shodan()
+    zoomeye()
 
-    print('\n\n[*] Removendo subdominios duplicados')
+    if len(subs) > 0:
+        print('\n\n[*] Removendo subdominios duplicados')
 
-    uniq_subs = list(dict.fromkeys(subs))
-    uniq_subs.sort()
-    
-    print('\n[+] {} Subdominios únicos encontrados!'.format(len(uniq_subs)))
+        uniq_subs = list(dict.fromkeys(subs))
+        uniq_subs.sort()
 
-    print('\n[*] Filtrando por subdominios ativos\n')
+        print('\n[+] {} Subdominios únicos encontrados!'.format(len(uniq_subs)))
+        print('\n[*] Filtrando por subdominios válidos\n')
 
-    for x in uniq_subs:
-        subdomain_check(x)
+        for x in uniq_subs:
+            subdomain_check(x)
 
-    print("\n[+] {} Subdominios Ativos!\n".format(len(active_subs)))
-    return active_subs
+        print("\n[+] {} Subdominios válidos encontrados!\n".format(len(active_subs)))
+        return active_subs
+    else: print("\n[*] Não foi possível encontrar subdominios para este destino!\n")
 
 def subdomain_check(sub):
     try:
         conn = resolver.query(sub,'a')
         print(conn.qname)
         active_subs.append(conn.qname)
-    except resolver.NoAnswer as e:
+    except resolver.NoAnswer:
         try:
             conn = resolver.query(sub,'aaaa')
             print(conn.qname)
             active_subs.append(conn.qname)
         except:
             return
-    except:
+    except resolver.NoNameservers:
         return
+    except resolver.NXDOMAIN:
+        return
+    except exception.Timeout:
+        return
+    except KeyboardInterrupt:
+        exit()
 
 def certspotter():
+    print("[+] Consultando certspotter")
 
-    params = (
-            ('domain', domain),
-            ('include_subdomains', 'true'),
-            ('expand', 'dns_names'),
-        )
-    # Insira sua chave de API após o Bearer
-    try:
-        api = cert_api()
-        header = {"Authorization": "Bearer "+api}
-        print("[+] Consultando certspotter")
-    except: return
-    
+    params = {'domain':domain,'include_subdomains':'true','expand':'dns_names'}
+    api = cert_api()
+    header = {"Authorization": "Bearer "+api}
     response = requests.get('https://api.certspotter.com/v1/issuances',headers=header, params=params).json()
-    #print('\nCertPotter: {}'.format(response))
+
     for a in response:
         try:
             a = a['dns_names']
@@ -82,6 +83,7 @@ def certspotter():
                     if b != None:
                         subs.append(b.group(0))
         except:
+            print('[!] Error: {}'.format(response['message']))
             return
 
 def bufferover():
@@ -95,7 +97,7 @@ def bufferover():
                 subs.append(domains)
 
 def riddler():
-    print("[+] Consultando riddler")
+    print("[+] Consultando Riddler")
     url = 'https://riddler.io/search/exportcsv?q=pld:'+domain
     response = requests.get(url)
     sub = re.findall("[\w\d.\-]+\."+domain,response.text)
@@ -157,78 +159,72 @@ def securitytrails():
             "Accept": "application/json",
             "APIKEY": sec_api()
         }
-        
+
         print("[+] Consultando securitytrails")
-        
         response = requests.request("GET", url, headers=headers, params=querystring)
-        #print('\nSecurity Trails: {}'.format(response.json()))
-        
+
         for x in response.json()['subdomains']:
             sub = '{}.{}'.format(x,domain)
             subs.append(sub)
     except:
+        print('[!] Error: '+response.json()['message'])
         return
 
 def passivetotal():
-    headers = {
-        'Content-Type': 'application/json',
-    }
- 
-    try:        
+    print("[+] Consultando passivetotal")
+    try:
+        headers = {'Content-Type': 'application/json',}
         keys = tuple(passive_api())
-        print("[+] Consultando passivetotal")
-    except:return
+        data = {"query":domain}
 
-    data = '{"query":"'+domain+'"}'
-
-    response = requests.post('https://api.passivetotal.org/v2/enrichment', headers=headers, data=data, auth=keys).json()
-
-    for x in response['subdomains']:
-        if not '*' in x:
-            sub = '{}.{}'.format(x,domain)
-            subs.append(sub)
-
+        response = requests.post('https://api.passivetotal.org/v2/enrichment', headers=headers, json=data, auth=keys).json()
+        try:
+            for x in response['subdomains']:
+                if not '*' in x:
+                    sub = '{}.{}'.format(x,domain)
+                    subs.append(sub)
+        except:
+            print('[!] Error: '+response['message'])
+            return
+    except:
+        return
+        
 def dnsdb():
     print("[+] Consultando dnsdb")
     try:
-        # Insira sua chave de API em X-API-Key
         headers = {
             'Accept': 'application/x-ndjson',
             'X-API-Key': dnsdb_api(),
+            'Content-type':'application/x-www-form-urlencoded'
         }
+        params = {'limit':'0','swclient': 'ScoutWebsite','version':'2.2.0'}
 
-        response = requests.get('https://api.dnsdb.info/dnsdb/v2/regex/rrnames/.*\.'+domain+'\.$/A', headers=headers)
+        response = requests.get('https://api.dnsdb.info/dnsdb/v2/regex/rrnames/.*\.'+domain+'[\.]?+$/A', params=params,headers=headers)
+       
+        if response.status_code == 403:
+            print('[!] '+response.text)     
+            return
+
         sub = re.findall('[\w\d\.\-]+\.'+domain,response.text)
         for x in sub:
             subs.append(x)
-        
-        response = requests.get('https://api.dnsdb.info/dnsdb/v2/regex/rrnames/.*\.'+domain+'\.$/AAAA', headers=headers)
+  
+        response = requests.get('https://api.dnsdb.info/dnsdb/v2/regex/rrnames/.*\.'+domain+'[\.]?+$/AAAA',params=params, headers=headers)
         sub = re.findall('[\w\d\.\-]+\.'+domain,response.text)
         for x in sub:
             subs.append(x)
 
-        response = requests.get('https://api.dnsdb.info/dnsdb/v2/regex/rrnames/.*\.'+domain+'\.$/CNAME', headers=headers)
+        response = requests.get('https://api.dnsdb.info/dnsdb/v2/regex/rrnames/.*\.'+domain+'[\.]?+$/CNAME',params=params, headers=headers)
         sub = re.findall('[\w\d\.\-]+\.nubank\.com\.br',response.text)
         for x in sub:
             subs.append(x)
 
-        #response = requests.get('https://api.dnsdb.info/dnsdb/v2/regex/rrnames/.*\.'+domain+'\.$/NS', headers=headers)
-        #sub = re.findall('[\w\d\.\-]+\.nubank\.com\.br',response.text)
-        #for x in sub:
-            #subs.append(x)
-
-        #response = requests.get('https://api.dnsdb.info/dnsdb/v2/regex/rrnames/.*\.'+domain+'\.$/MX', headers=headers)
-        #sub = re.findall('[\w\d\.\-]+\.'+domain,response.text)
-        #for x in sub:
-            #subs.append(x)
-
-    except Exception as e:
-        #print('Error: {}'.format(e))
+    except Exception:
         return
 
 def virustotal():
     try:
-        print('[+] Consultando Virustotal')
+        print('[+] Consultando virustotal')
 
         # Insira sua chave de API como valor do x-apikey
         headers = {
@@ -251,35 +247,31 @@ def virustotal():
         for sub in regex_sub:
             for x in sub:
                 subs.append(x)
-    except Exception as e: 
-        #print('VirusTotal: {}'.format(e))
+
+    except: 
+        print('[!] Error: '+response.json()['error']['message'])
         return
 
 def shodan():
     try:    
-        print('[+] Consultando Shodan')
+        print('[+] Consultando shodan')
 
-        # Insira sua chave de API como valor do 'key'
-        params = (
-        ('key', shodan_api()),
-        )
+        params = {'key':shodan_api()}
+        response = requests.get('https://api.shodan.io/dns/domain/nubank.com.br', params=params)
 
-        response = requests.get('https://api.shodan.io/dns/domain/nubank.com.br', params=params).json()
-        print(response)
-
-        for sub in response['subdomains']:
+        for sub in response.json()['subdomains']:
             subs.append('{}.{}'.format(sub,domain))
 
-    except Exception as e:
-        #print('Error: {}'.format(e)) 
+    except Exception:
+        if response.status_code == 401:
+            print('[!] Error: This server could not verify that you are authorized to access the document you requested.')
         return
 
 def threatcrowd():
     try:
-        print('[+] Consultando ThreatCrowd')
+        print('[+] Consultando threatcrowd')
         params = {"domain": domain}
         response =  requests.get("https://www.threatcrowd.org/searchApi/v2/domain/report/", params=params).json()
-        #print(response['subdomains'])
         for sub in response['subdomains']:
             subs.append(sub)
     except:
@@ -287,9 +279,58 @@ def threatcrowd():
 
 def alienvault():
     try:
-        print('[+] Consultando AlienVault')
+        print('[+] Consultando alienvault')
         response = requests.get("https://otx.alienvault.com/api/v1/indicators/domain/"+domain+"/passive_dns").json()
-        #print(response)
         for sub in response['passive_dns']:
             subs.append(sub['hostname'])
+    except: return
+
+def chaos():
+    try:
+        print("[+] Consultando chaos")
+        headers = {
+            'Authorization': chaos_api(),
+        }
+        response = requests.get('https://dns.projectdiscovery.io/dns/'+domain+'/subdomains', headers=headers).json()
+        for sub in response['subdomains']:
+            subs.append('{}.{}'.format(sub,domain))
+    except:
+        print('[!] Error: '+response['error'])
+        return
+
+def zoomeye():
+    print('[+] Consultando zoomeye')
+    api,cookie = zoomeye_api()
+        
+    # Subdomains by cookies
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:89.0) Gecko/20100101 Firefox/89.0',
+        'Accept': 'application/json, text/plain, */*',
+        'Content-Type': 'application/json;charset=utf-8',
+        'Cube-Authorization': cookie,
+        'Connection': 'keep-alive',
+    }
+    params = {'q':domain,'p':1,'s':100000,'type':1}
+    
+    try:    
+        response = requests.get('https://www.zoomeye.org/domain/search', headers=headers, params=params).json()
+        for x in response['list']:
+            subs.append(x['name'])
+    except Exception:
+
+        # Subdomains by api
+        headers = {'API-KEY': api}
+        page = 1
+        while True:
+            try:
+                params = {'q':domain,'page':page,'type':1}
+
+                response = requests.get('https://api.zoomeye.org/domain/search', headers=headers, params=params).json()
+                if len(response['list']) == 0: break
+                for x in response['list']:
+                    subs.append(x['name'])
+                page +=1
+            except: 
+                print('[!] Error: '+response['message'])
+                break
     except: return
