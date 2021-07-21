@@ -1,9 +1,35 @@
 {
-    "certspotter":["API_KEY","API_KEY"],
-    "sectrails":["API_KEY","API_KEY"],
-    "shodan":["API_KEY","API_KEY"],
-    "passivetotal":[["USER", "API_KEY"],["USER","API_KEY"]],
-    "dnsdb":["API_KEY","API_KEY"],
-    "virustotal":["API_KEY","API_KEY"],
-    "alienvault":["API_KEY","API_KEY"]
+    "certspotter":[
+        "API_KEY"
+    ],
+    "sectrails":[
+        "API_KEY"
+    ],
+    "shodan":[
+        "API_KEY"
+    ],
+    "passivetotal":[
+        ["USER","API_KEY"],
+        ["USER","API_KEY"]
+    ],
+    "dnsdb":[
+        "API_KEY"
+    ],
+    "virustotal":[
+        "API_KEY"
+    ],
+    "alienvault":[
+        "API_KEY"
+    ],
+    "chaos":[
+        "API_KEY"
+    ],
+    "fofa":{
+        "api":["API_KEY"],
+        "cookie":["COOKIE_SESSION"]
+    },
+    "zoomeye":{
+        "api":["API_KEY"],
+        "cookie":["COOKIE_SESSION"]
+    }
 }
