@@ -15,7 +15,9 @@ def get_ip_domain(domain):
     return ip
 
 # Função inicial para gerenciar as portas e iniciar o escaneamento
-def port_scan(ip,ports):
+def port_scan(domain,ports):
+    ip  = get_ip_domain(domain)
+    
     if ports == None:              
         # Montando a lista de portas padrões
         ports = []
