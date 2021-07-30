@@ -13,7 +13,7 @@ def random_api(api):
         return keys[key],cookies[cookie]
 
 def get_api(api):
-    with open('.config/api_keys.json','r') as key:
+    with open('config/api_keys.json','r') as key:
         return json.load(key)[api]
 
 def sec_api():
@@ -25,7 +25,7 @@ def cert_api():
 def dnsdb_api():
     return random_api('dnsdb')
 
-def virustotal_api():
+def virus_api():
     return random_api('virustotal')
 
 def passive_api():
