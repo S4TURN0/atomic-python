@@ -1,6 +1,6 @@
-from .subdomains import subdomain
-from .port_scan import port_scan
-from .fuzzing import fuzzing
+from scripts.subdomains import subdomain
+from scripts.port_scan import port_scan
+from scripts.fuzzing import fuzzing
 
 # Função para execução automatica dos scripts 
 def auto(*args):
