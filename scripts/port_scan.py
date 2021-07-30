@@ -57,7 +57,7 @@ def connect_ports(ip,ports):
             print
 
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.settimeout(0.1)
+            sock.settimeout(1)
             connect = sock.connect_ex((ip,port))
 
             if connect == 0:
