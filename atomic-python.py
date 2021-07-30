@@ -1,10 +1,7 @@
 #!/usr/bin/python3
-import argparse
-from scripts.subdomains import subdomain
-from scripts.port_scan import port_scan, get_ip_domain
-from scripts.fuzzing import fuzzing
-from scripts.automation import auto
+from lib.scriptslib import *
 from utils.banner import banners
+import argparse
 
 parse = argparse.ArgumentParser(description="Esse código serve para realizar um portscan")
 parse.add_argument('-a','--auto',action="store_true",dest="automation",help="Realizar discoberta de subdominios")
@@ -25,7 +22,6 @@ def main():
     try:
         if args.destino != None:
             domain = args.destino
-            ip = get_ip_domain(domain)
             ports = args.p
         else:
             domain = None
@@ -34,7 +30,7 @@ def main():
 
         if args.subdomain: subdomain(domain)
 
-        if args.portscan == True or args.p != None: port_scan(ip,ports)
+        if args.portscan == True or args.p != None: port_scan(domain,ports)
 
         if args.fuzzing: fuzzing(domain,args.sc,args.hc,args.automation,args.fuzzing,args.w)
 
