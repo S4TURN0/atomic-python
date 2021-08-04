@@ -19,19 +19,15 @@ def port_scan(domain,ports):
     if ports == None:              
         # Montando a lista de portas padrões
         ports = []
-        for x in [1,1025]: 
+        for x in range(1,1025): 
             ports.append(x)
-
-        # Iniciando o escaneamento com as portas definidas
         return connect_ports(domain,ports)
 
     elif '-' in ports:
         # Montando a lista de portas padrões
         start_port, end_port = ports.split("-")
         start_port, end_port = int(start_port), int(end_port)
-        ports = [ p for p in range(start_port, end_port+1)]
-
-        # Iniciando o escaneamento com as portas definidas                
+        ports = [ p for p in range(start_port, end_port+1)]             
         return connect_ports(domain,ports)
 
     elif ',' in ports:
