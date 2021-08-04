@@ -4,7 +4,7 @@ from utils.banner import banners
 import argparse
 
 parse = argparse.ArgumentParser(description="Esse código serve para realizar um portscan")
-parse.add_argument('-a','--auto',action="store_true",dest="automation",help="Realizar discoberta de subdominios")
+parse.add_argument('-a','--auto',action="store_true",dest="automation",help="Automatiza todo o processo de discovery, scanning e web fuzzing")
 parse.add_argument('-d','--dest',type=str,dest="destino",help="Insira o endereço de destino")
 parse.add_argument('-p',help="Insira a porta para ser escaneada")
 parse.add_argument('-s','--subs',action="store_true",dest="subdomain",help="Realizar discoberta de subdominios")
