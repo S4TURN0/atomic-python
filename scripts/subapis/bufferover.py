@@ -1,5 +1,6 @@
-def bufferover(domain,requests,re):
+def bufferover(*args):
     print("[+] Consultando bufferover")
+    domain,requests,re = args[0],args[1],args[3]
     subs = []
     sub = 'https://dns.bufferover.run/dns?q='+domain
     req = requests.get(sub).json()['FDNS_A']

@@ -1,5 +1,6 @@
-def threatcrowd(domain,requests):
+def threatcrowd(*args):
     print('[+] Consultando threatcrowd')
+    domain,requests = args[0],args[1]
     params = {"domain": domain}
     subs = []
     try:

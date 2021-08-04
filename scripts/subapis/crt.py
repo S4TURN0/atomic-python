@@ -1,5 +1,6 @@
-def crt(domain,requests,re):
+def crt(*args):
     print("[+] Consultando crt.sh")
+    domain,requests,re = args[0],args[1],args[3]
     subs =[]
     url = 'https://crt.sh/?q=%.'+domain+'&output=json'
     response = requests.get(url)

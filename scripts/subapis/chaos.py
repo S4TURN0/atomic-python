@@ -8,5 +8,5 @@ def chaos(domain,requests,api):
             subs.append('{}.{}'.format(sub,domain))
         return subs
     except:
-        print('[!] Error: '+response['error'])
+        print('[!] Error: '+response['error'],'\n')
         return

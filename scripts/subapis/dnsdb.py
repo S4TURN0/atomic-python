@@ -1,4 +1,4 @@
-def dnsdb(domain,requests,api,re):
+def dnsdb(domain,requests,api,json):
     print("[+] Consultando dnsdb")
     try:
         subs = []
@@ -8,26 +8,18 @@ def dnsdb(domain,requests,api,re):
             'Content-type':'application/x-www-form-urlencoded'
         }
         params = {'limit':'0','swclient': 'ScoutWebsite','version':'2.2.0'}
-        response = requests.get('https://api.dnsdb.info/dnsdb/v2/regex/rrnames/.*\.'+domain+'[\.]?+$/A', params=params,headers=headers)
-
-        if response.status_code == 403:
+        response = requests.get('https://api.dnsdb.info/dnsdb/v2/glob/rrnames/*.'+domain+'./ANY', params=params,headers=headers)
+        if response.status_code == 200:
+            for record in response.iter_lines():
+                record = json.loads(record)
+                try:
+                    if record['obj']['rrtype'] in ['A','AAAA','CNAME']:
+                        subs.append(record['obj']['rrname'])
+                except:
+                    continue
+            return subs
+        else:
             print('[!] '+response.text)  
             return
-
-        sub = re.findall('[\w\d\.\-]+\.'+domain,response.text)
-        for x in sub:
-            subs.append(x)
-
-        response = requests.get('https://api.dnsdb.info/dnsdb/v2/regex/rrnames/.*\.'+domain+'[\.]?+$/AAAA',params=params, headers=headers)
-        sub = re.findall('[\w\d\.\-]+\.'+domain,response.text)
-        for x in sub:
-            subs.append(x)
-
-        response = requests.get('https://api.dnsdb.info/dnsdb/v2/regex/rrnames/.*\.'+domain+'[\.]?+$/CNAME',params=params, headers=headers)
-        sub = re.findall('[\w\d\.\-]+\.nubank\.com\.br',response.text)
-        for x in sub:
-            subs.append(x)
-        
-        return subs
     except Exception:
         return

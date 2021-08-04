@@ -1,6 +1,6 @@
-def hackertarget(domain,requests,re):
+def hackertarget(*args):
     print("[+] Consultando hackertarget")
-
+    domain,requests,re = args[0],args[1],args[3]
     subs = []
     headers = {
     'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:89.0) Gecko/20100101 Firefox/89.0',

@@ -1,8 +1,8 @@
-def riddler(domain,requests,re):
+def riddler(*args):
     print("[+] Consultando riddler")
+    domain,requests,re = args[0],args[1],args[3]
     subs = []
-    url = 'https://riddler.io/search/exportcsv?q=pld:'+domain
-    response = requests.get(url)
+    response = requests.get('https://riddler.io/search/exportcsv?q=pld:'+domain)
     sub = re.findall("[\w\d.\-]+\."+domain,response.text)
     if len(sub) > 0:
         for x in sub:
