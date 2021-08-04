@@ -18,7 +18,7 @@ def fuzzing(*args):
                 url = "http://{}/".format(domain)
                 req = requests.get(url)     
         
-        print('\n[*] Iniciando o Web Fuzzing no site... ', url,"\n")
+        print('\n[*] Iniciando o Web Fuzzing no site: ', url,"\n")
 
         for word in words.readlines():    
                 
