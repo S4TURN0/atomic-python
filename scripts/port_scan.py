@@ -16,8 +16,6 @@ def get_ip_domain(domain):
 
 # Função inicial para gerenciar as portas e iniciar o escaneamento
 def port_scan(domain,ports):
-    ip  = get_ip_domain(domain)
-    
     if ports == None:              
         # Montando a lista de portas padrões
         ports = []
@@ -25,7 +23,7 @@ def port_scan(domain,ports):
             ports.append(x)
 
         # Iniciando o escaneamento com as portas definidas
-        return connect_ports(ip,ports)
+        return connect_ports(domain,ports)
 
     elif '-' in ports:
         # Montando a lista de portas padrões
@@ -34,38 +32,32 @@ def port_scan(domain,ports):
         ports = [ p for p in range(start_port, end_port+1)]
 
         # Iniciando o escaneamento com as portas definidas                
-        return connect_ports(ip,ports)
+        return connect_ports(domain,ports)
 
     elif ',' in ports:
         # Montando a lista de portas padrões    
-        x = ports.split(",")
-        ports = [ int(p) for p in x]
-
-        # Iniciando o escaneamento com as portas definidas
-        return connect_ports(ip,ports)
+        ports = ports.split(",")
+        ports = [int(i) for i in ports]
+        return connect_ports(domain,ports)
             
     else: 
         ports = [int(ports)]
-        return connect_ports(ip,ports)    
+        return connect_ports(domain,ports)    
 
 # Função para realizar o portscan
-def connect_ports(ip,ports):
-    print("[*] Inciando o portscan no destino: ",ip,"\n")
-
+def connect_ports(domain,ports):
+    print("[*] Inciando o portscan no destino: ",domain,"\n")
     port_found = []
-    start,end = ports
     try:
-        for port in range(start,end+1):
-            print
-
+        for port in ports:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.settimeout(1)
-            connect = sock.connect_ex((ip,port))
+            connect = sock.connect_ex((domain,port))
 
             if connect == 0:
                 port_found.append(port)
                 print("Conexão aberta:", getServiceName(port,'tcp'))        
                 sock.close()
     except socket.gaierror:
-        print("[!] Não foi possivel se conectar ao dominio:",ip,"\n")
+        print("[!] Não foi possivel se conectar ao dominio:",domain,"\n")
     return port_found
