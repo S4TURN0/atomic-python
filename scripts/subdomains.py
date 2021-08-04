@@ -19,7 +19,7 @@ def subdomain(domain):
     for x in [alienvault,anubis,bufferover,crt,hackertarget,riddler,threatcrowd]:
         list_subs.append(x(domain,requests,json,re))
 
-    list_subs.append(certspotter(domain,requests,cert_api()))    
+    list_subs.append(certspotter(domain,requests,cert_api()))
     list_subs.append(chaos(domain,requests,chaos_api()))
     list_subs.append(dnsdb(domain,requests,dnsdb_api(),re))
     list_subs.append(passivetotal(domain,requests,passive_api()))
@@ -55,14 +55,14 @@ def subdomain_check():
     while True:
         sub = q.get()
         try:
-            conn = resolver.query(sub,'a')
-            print(conn.qname)
-            active_subs.append(conn.qname)
+            resolver.query(sub,'a')
+            print(sub)
+            active_subs.append(sub)
         except resolver.NoAnswer:
             try:
-                conn = resolver.query(sub,'aaaa')
-                print(conn.qname)
-                active_subs.append(conn.qname)
+                resolver.query(sub,'aaaa')
+                print(sub)
+                active_subs.append(sub)
             except: continue
         except KeyboardInterrupt:
             exit()
