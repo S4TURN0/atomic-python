@@ -5,8 +5,8 @@ def virustotal(domain,requests,api):
         headers = {'x-apikey': api}
         subs = []
 
-        response = requests.get('https://www.virustotal.com/api/v3/domains/'+domain+'/subdomains?limit=40', headers=headers).json()
-        for querys in response['data']:
+        response = requests.get('https://www.virustotal.com/api/v3/domains/'+domain+'/subdomains?limit=40', headers=headers)
+        for querys in response.json()['data']:
             subs.append(querys['id'])
         while True:
             try:
