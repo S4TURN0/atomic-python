@@ -1,4 +1,7 @@
 {
+    "binaryedge":[
+        "API_KEY"
+    ],
     "certspotter":[
         "API_KEY"
     ],
@@ -9,7 +12,6 @@
         "API_KEY"
     ],
     "passivetotal":[
-        ["USER","API_KEY"],
         ["USER","API_KEY"]
     ],
     "dnsdb":[
