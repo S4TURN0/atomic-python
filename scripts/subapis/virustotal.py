@@ -1,20 +1,24 @@
-def virustotal(domain,requests,api):
+from config.keys import random_api
+import requests
+
+def virustotal(domain):
     try:
-        print('[+] Consultando virustotal')
-
-        headers = {'x-apikey': api}
-        subs = []
-
-        response = requests.get('https://www.virustotal.com/api/v3/domains/'+domain+'/subdomains?limit=40', headers=headers)
-        for querys in response.json()['data']:
-            subs.append(querys['id'])
-        while True:
-            try:
-                response = requests.get(response['links']['next'], headers=headers).json()
-                for querys in response['data']:
-                    subs.append(querys['id'])
-            except: break
-        return subs
+        api = random_api('virustotal')
+        if api != "API_KEY":
+            print('[+] Consultando virustotal')
+            url = 'https://www.virustotal.com/vtapi/v2/domain/report'
+            params = {'apikey':api,'domain':domain}
+            response = requests.get(url, params=params)
+            try: 
+                subs = response.json()['subdomains']
+                for sub in response.json()['domain_siblings']:subs.append
+            except:
+                pass
+            return subs
+        return None
     except:
-        print('[!] Error: '+response.json()['error']['message'],'\n')
-        return
+        if response.status_code == 403: print('[!] VirusTotal: Invalid API Key')
+        elif response.json()['verbose_msg']: print('[!] VirusTotal:',response.json()['verbose_msg'])
+        else:
+            print('[!] VirusTotal: ',response.json())
+        return None

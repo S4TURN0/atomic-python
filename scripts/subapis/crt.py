@@ -1,15 +1,23 @@
+import requests,re
+
 def crt(*args):
     print("[+] Consultando crt.sh")
-    domain,requests,re = args[0],args[1],args[3]
+    domain = args[0]
     subs =[]
     url = 'https://crt.sh/?q=%.'+domain+'&output=json'
-    response = requests.get(url)
-    for x in response.json():
-        sub = x['name_value']
-        if sub != None:
-            try:
-                sub = re.sub(r'^[\n\.\*]+','',sub)
-                sub = re.findall(r".*\."+domain,sub)
-                subs.append(sub[0])
-            except Exception as e: pass #print('Error: {}'.format(e))
-    return subs
+    try:
+        response = requests.get(url)
+        print(response)
+        for x in response.json():
+            sub = x['name_value']
+            if sub != None:
+                try:
+                    sub = re.search('^[\w\d\.\-]+\.'+domain,sub).group(0).lower()
+                    subs.append(sub)
+                except Exception as e: pass #print('Error: {}'.format(e))
+        return subs
+    except KeyboardInterrupt:
+        print("\n[!] Execução cancelada!")
+        exit()
+    except Exception:
+        print(Exception)

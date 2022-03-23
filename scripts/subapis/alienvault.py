@@ -7,4 +7,7 @@ def alienvault(*args):
         for sub in response['passive_dns']:
             subs.append(sub['hostname'])
         return subs
+    except KeyboardInterrupt:
+        print("\n[!] Execução cancelada!")
+        exit()
     except: return

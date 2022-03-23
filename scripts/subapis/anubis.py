@@ -11,5 +11,5 @@ def anubis(*args):
                 try:
                     sub = re.sub(r'^[\n\*\.]+','',x)
                     subs.append(sub)
-                except Exception as e: pass
+                except Exception: pass
         return subs
