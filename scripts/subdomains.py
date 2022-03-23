@@ -15,18 +15,20 @@ def subdomain(domain):
     active_subs = []
     list_subs = []
     sub = []
-    
-    for x in [alienvault,anubis,bufferover,crt,hackertarget,riddler,threatcrowd]:
-        list_subs.append(x(domain,requests,json,re))
+    try:
+        resolver.query('google.com','a')
+        for x in [alienvault,anubis,bufferover,crt,hackertarget,riddler,threatcrowd]:
+            list_subs.append(x(domain,requests,json,re))
 
-    list_subs.append(certspotter(domain,requests,cert_api()))
-    list_subs.append(chaos(domain,requests,chaos_api()))
-    list_subs.append(dnsdb(domain,requests,dnsdb_api(),re))
-    list_subs.append(passivetotal(domain,requests,passive_api()))
-    list_subs.append(sectrails(domain,requests,sec_api()))
-    list_subs.append(shodan(domain,requests,shodan_api()))
-    list_subs.append(virustotal(domain,requests,virus_api()))
-    list_subs.append(zoomeye(domain,requests,zoomeye_api()))
+        for x in [certspotter,chaos,dnsdb,passivetotal,sectrails,shodan,virustotal]:
+            list_subs.append(x(domain))
+    except resolver.NoNameservers:
+        print("[!] Error: Failed to establish a new connection")
+    except requests.exceptions.ConnectionError:
+        print("[!] Error: Failed to establish a new connection")
+    except KeyboardInterrupt:
+        print("\n[!] Execução cancelada!")
+        exit()
 
     if None in list_subs:list_subs = list(filter(None,list_subs))
     if len(list_subs) > 0:
@@ -46,9 +48,12 @@ def subdomain(domain):
             q.put(worker)
         q.join()
 
-        print("\n[+] {} Subdominios válidos encontrados!\n".format(len(active_subs)))
+        if len(active_subs) > 0:
+            print("\n[+] {} Subdominios válidos encontrados!\n".format(len(active_subs)))
+        else:
+            print("[!] Não foi possível encontrar subdominios válidos para este destino!\n")
         return active_subs
-    else: print("\n[*] Não foi possível encontrar subdominios para este destino!\n")
+    else: print("\n[!] Não foi possível encontrar subdominios para este destino!\n")
 
 # Função para filtrar subdominios ativos
 def subdomain_check():
