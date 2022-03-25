@@ -7,7 +7,6 @@ def crt(*args):
     url = 'https://crt.sh/?q=%.'+domain+'&output=json'
     try:
         response = requests.get(url)
-        print(response)
         for x in response.json():
             sub = x['name_value']
             if sub != None:
@@ -19,5 +18,5 @@ def crt(*args):
     except KeyboardInterrupt:
         print("\n[!] Execução cancelada!")
         exit()
-    except Exception:
-        print(Exception)
+    except:
+        return
